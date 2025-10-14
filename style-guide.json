@@ -1,0 +1,38 @@
+{
+  "name": "Outta Sight Pizza Assistant UI",
+  "colors": {
+    "background": "#050709",
+    "surface": "#11141C",
+    "muted": "#1B202C",
+    "primary": "#FF5C39",
+    "primaryAccent": "#FF8A6A",
+    "secondary": "#4C5BFF",
+    "accent": "#39E6AD",
+    "foreground": "#F6F7FB",
+    "mutedForeground": "#9AA2B1",
+    "border": "#222837",
+    "danger": "#FF6B6B",
+    "warning": "#F8B84C"
+  },
+  "typography": {
+    "display": "Space Grotesk",
+    "body": "Inter",
+    "code": "JetBrains Mono"
+  },
+  "effects": {
+    "cardShadow": "0 20px 60px -28px rgba(17, 22, 32, 0.65)",
+    "glow": "0 0 60px rgba(255, 92, 57, 0.25)"
+  },
+  "components": {
+    "button": {
+      "borderRadius": "9999px",
+      "padding": "0.75rem 1.5rem",
+      "fontWeight": 600
+    },
+    "card": {
+      "borderRadius": "1.25rem",
+      "padding": "1.5rem",
+      "background": "#11141C"
+    }
+  }
+}
