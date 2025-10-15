@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { getSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  applySupabaseCookies,
+  getSupabaseServerClient,
+} from "@/lib/supabase/server";
 
 const orderItemSchema = z.object({
   id: z.string(),
@@ -39,19 +42,28 @@ const requestSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const supabase = getSupabaseServerClient();
+  const cookieResponse = new NextResponse();
+  const supabase = getSupabaseServerClient(cookieResponse);
+  const respond = (
+    body: unknown,
+    init?: ResponseInit | undefined
+  ): NextResponse => {
+    const response = NextResponse.json(body, init);
+    applySupabaseCookies(cookieResponse, response);
+    return response;
+  };
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return respond({ error: "Unauthorized" }, { status: 401 });
   }
 
   const parsed = requestSchema.safeParse(await request.json());
 
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid order payload" }, { status: 400 });
+    return respond({ error: "Invalid order payload" }, { status: 400 });
   }
 
   const { order, address } = parsed.data;
@@ -65,7 +77,7 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (profileError) {
-    return NextResponse.json({ error: profileError.message }, { status: 500 });
+    return respond({ error: profileError.message }, { status: 500 });
   }
 
   console.info(
@@ -89,7 +101,7 @@ export async function POST(request: Request) {
     )
   );
 
-  return NextResponse.json({
+  return respond({
     ok: true,
     message: "Order staged. Wire this payload to Outta Sight's ordering endpoint when available.",
   });

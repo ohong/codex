@@ -125,6 +125,7 @@ export default function HomePage() {
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [authMessage, setAuthMessage] = useState<string | null>(null);
 
@@ -398,6 +399,52 @@ export default function HomePage() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setAuthError(null);
+    setAuthMessage(null);
+    setGoogleLoading(true);
+
+    try {
+      if (typeof window === "undefined") return;
+
+      const returnTo =
+        window.location.pathname +
+        window.location.search +
+        window.location.hash;
+      const redirectTo =
+        window.location.origin +
+        `/auth/callback${
+          returnTo && returnTo !== "/" ? `?next=${encodeURIComponent(returnTo)}` : ""
+        }`;
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo,
+          scopes: "openid email profile",
+          queryParams: {
+            access_type: "offline",
+            prompt: "consent",
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.location.assign(data.url);
+      }
+    } catch (error) {
+      setAuthError(
+        error instanceof Error
+          ? error.message
+          : "Google sign-in could not be started."
+      );
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     setAuthEmail("");
@@ -660,11 +707,15 @@ export default function HomePage() {
                 </p>
               )}
               {authMessage && (
-                <p className="rounded-xl border border-accent/40 bg-accent/10 p-3 text-sm text-accent-foreground">
+                <p className="rounded-xl border border-accent/40 bg-accent/10 p-3 text-sm text-foreground">
                   {authMessage}
                 </p>
               )}
-              <Button type="submit" className="w-full" disabled={authLoading}>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={authLoading || googleLoading}
+              >
                 {authLoading ? (
                   <span className="flex items-center justify-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -677,6 +728,51 @@ export default function HomePage() {
                 )}
               </Button>
             </form>
+            <div className="flex items-center gap-3 text-xs uppercase tracking-[0.3em] text-muted-foreground">
+              <div className="h-px flex-1 bg-border/70" />
+              or continue with
+              <div className="h-px flex-1 bg-border/70" />
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              disabled={googleLoading || authLoading}
+              onClick={handleGoogleSignIn}
+            >
+              {googleLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Redirecting to Google…
+                </span>
+              ) : (
+                <span className="flex items-center justify-center gap-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="h-4 w-4"
+                  >
+                    <path
+                      fill="#4285F4"
+                      d="M23.12 12.27c0-.78-.07-1.53-.21-2.27H12v4.3h6.24c-.27 1.4-1.08 2.58-2.3 3.38v2.8h3.72c2.18-2 3.46-4.95 3.46-8.21Z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M12 24c3.24 0 5.96-1.07 7.95-2.92l-3.72-2.8c-1.04.7-2.37 1.12-4.23 1.12-3.25 0-6-2.2-6.98-5.17H1.2v3.25C3.18 21.53 7.2 24 12 24Z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M5.02 14.23A7.21 7.21 0 0 1 4.64 12c0-.77.14-1.52.38-2.23V6.52H1.2A11.95 11.95 0 0 0 0 12c0 1.89.45 3.68 1.2 5.48l3.82-3.25Z"
+                    />
+                    <path
+                      fill="#EA4335"
+                      d="M12 4.75c1.76 0 3.3.61 4.52 1.8l3.35-3.35C17.95 1.2 15.23 0 12 0 7.2 0 3.18 2.47 1.2 6.52l3.82 3.25C6 6.95 8.75 4.75 12 4.75Z"
+                    />
+                  </svg>
+                  Continue with Google
+                </span>
+              )}
+            </Button>
           </CardContent>
           <CardFooter className="flex justify-center text-sm text-muted-foreground">
             {authMode === "sign-in" ? (

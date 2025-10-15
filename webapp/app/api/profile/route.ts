@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { getSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  applySupabaseCookies,
+  getSupabaseServerClient,
+} from "@/lib/supabase/server";
 
 const updateSchema = z.object({
   name: z.string().min(1).optional(),
@@ -15,13 +18,22 @@ const updateSchema = z.object({
 });
 
 export async function GET() {
-  const supabase = getSupabaseServerClient();
+  const cookieResponse = new NextResponse();
+  const supabase = getSupabaseServerClient(cookieResponse);
+  const respond = (
+    body: unknown,
+    init?: ResponseInit | undefined
+  ): NextResponse => {
+    const response = NextResponse.json(body, init);
+    applySupabaseCookies(cookieResponse, response);
+    return response;
+  };
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return respond({ error: "Unauthorized" }, { status: 401 });
   }
 
   const { data, error } = await supabase
@@ -33,30 +45,36 @@ export async function GET() {
     .maybeSingle();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return respond({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ profile: data ?? null });
+  return respond({ profile: data ?? null });
 }
 
 export async function PUT(request: Request) {
-  const supabase = getSupabaseServerClient();
+  const cookieResponse = new NextResponse();
+  const supabase = getSupabaseServerClient(cookieResponse);
+  const respond = (
+    body: unknown,
+    init?: ResponseInit | undefined
+  ): NextResponse => {
+    const response = NextResponse.json(body, init);
+    applySupabaseCookies(cookieResponse, response);
+    return response;
+  };
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return respond({ error: "Unauthorized" }, { status: 401 });
   }
 
   const body = await request.json().catch(() => ({}));
   const parsed = updateSchema.safeParse(body);
 
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: "Invalid address payload" },
-      { status: 400 }
-    );
+    return respond({ error: "Invalid address payload" }, { status: 400 });
   }
 
   const payload = parsed.data;
@@ -80,7 +98,7 @@ export async function PUT(request: Request) {
     );
 
   if (upsertError) {
-    return NextResponse.json({ error: upsertError.message }, { status: 500 });
+    return respond({ error: upsertError.message }, { status: 500 });
   }
 
   const { data, error } = await supabase
@@ -92,8 +110,8 @@ export async function PUT(request: Request) {
     .maybeSingle();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return respond({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ profile: data ?? null });
+  return respond({ profile: data ?? null });
 }

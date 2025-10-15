@@ -35,33 +35,33 @@
     --font-display: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
     --font-code: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
-    --background: 210 28.6% 2.7%;
-    --foreground: 228 38.5% 97.5%;
+    --background: 210 52% 97%;
+    --foreground: 220 32% 16%;
 
-    --card: 223.6 24.4% 8.8%;
-    --card-foreground: 228 38.5% 97.5%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 32% 16%;
 
-    --popover: 223.6 24.4% 8.8%;
-    --popover-foreground: 228 38.5% 97.5%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 32% 16%;
 
-    --primary: 10.6 100% 61.2%;
-    --primary-foreground: 210 28.6% 2.7%;
+    --primary: 18 92% 56%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 235 100% 64.9%;
-    --secondary-foreground: 210 28.6% 2.7%;
+    --secondary: 210 100% 92%;
+    --secondary-foreground: 220 32% 24%;
 
-    --muted: 222.4 23.9% 13.9%;
-    --muted-foreground: 219.1 12.8% 64.9%;
+    --muted: 210 45% 94%;
+    --muted-foreground: 219 22% 35%;
 
-    --accent: 160.2 77.6% 56.3%;
-    --accent-foreground: 210 28.6% 2.7%;
+    --accent: 163 72% 42%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 100% 71%;
-    --destructive-foreground: 210 28.6% 2.7%;
+    --destructive: 0 85% 58%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 222.9 23.6% 17.5%;
-    --input: 222.9 23.6% 17.5%;
-    --ring: 10.6 100% 61.2%;
+    --border: 214 32% 87%;
+    --input: 214 32% 87%;
+    --ring: 18 92% 56%;
 
     --radius: 1.25rem;
   }
@@ -74,8 +74,8 @@
 
   body {
     min-height: 100vh;
-    background: radial-gradient(circle at top left, rgba(76, 91, 255, 0.15), transparent 45%),
-      radial-gradient(circle at bottom right, rgba(255, 92, 57, 0.12), transparent 40%),
+    background: radial-gradient(circle at top left, rgba(255, 205, 178, 0.55), transparent 48%),
+      radial-gradient(circle at bottom right, rgba(173, 202, 255, 0.45), transparent 42%),
       hsl(var(--background));
     color: hsl(var(--foreground));
     -webkit-font-smoothing: antialiased;

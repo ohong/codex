@@ -58,11 +58,11 @@ const config: Config = {
         },
       },
       boxShadow: {
-        card: "0 20px 60px -28px rgba(17, 22, 32, 0.65)",
-        glow: "0 0 60px rgba(255, 92, 57, 0.25)",
+        card: "0 22px 48px -24px rgba(15, 23, 42, 0.25)",
+        glow: "0 0 44px rgba(249, 115, 22, 0.18)",
       },
       backgroundImage: {
-        mesh: "radial-gradient(circle at 20% 20%, rgba(57, 230, 173, 0.2), transparent 55%), radial-gradient(circle at 80% 0%, rgba(76, 91, 255, 0.18), transparent 50%)",
+        mesh: "radial-gradient(circle at 20% 20%, rgba(255, 203, 164, 0.35), transparent 60%), radial-gradient(circle at 80% 0%, rgba(173, 202, 255, 0.32), transparent 55%)",
       },
       borderRadius: {
         lg: "var(--radius)",

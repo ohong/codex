@@ -33,7 +33,7 @@ Create `webapp/.env.local` (for local dev) or configure the same keys in Vercel 
 | Key | Required | Description |
 | --- | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | ✅ | Supabase project URL. |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ | Supabase anon key used by both server and browser clients. |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | ✅ | Supabase publishable key used by both server and browser clients. |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | ✅ | Stripe publishable key for the Elements client. |
 | `STRIPE_SECRET_KEY` | ✅ | Stripe secret key used by the Setup Intent and payment APIs. |
 | `GEMINI_API_KEY` | ✅ | Server-side key for the Gemini 2.5 computer-use model. `GOOGLE_API_KEY` is also supported as a fallback. |

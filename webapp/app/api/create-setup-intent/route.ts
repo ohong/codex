@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
-import { getSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  applySupabaseCookies,
+  getSupabaseServerClient,
+} from "@/lib/supabase/server";
 
 const stripeSecret = process.env.STRIPE_SECRET_KEY;
 
@@ -22,13 +25,22 @@ export async function POST() {
     );
   }
 
-  const supabase = getSupabaseServerClient();
+  const cookieResponse = new NextResponse();
+  const supabase = getSupabaseServerClient(cookieResponse);
+  const respond = (
+    body: unknown,
+    init?: ResponseInit | undefined
+  ): NextResponse => {
+    const response = NextResponse.json(body, init);
+    applySupabaseCookies(cookieResponse, response);
+    return response;
+  };
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return respond({ error: "Unauthorized" }, { status: 401 });
   }
 
   const { data: profile, error } = await supabase
@@ -40,11 +52,11 @@ export async function POST() {
     .maybeSingle();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return respond({ error: error.message }, { status: 500 });
   }
 
   if (!profile?.address_line1 || !profile.city || !profile.state || !profile.postal_code) {
-    return NextResponse.json(
+    return respond(
       { error: "Save your address before linking a card." },
       { status: 400 }
     );
@@ -110,10 +122,10 @@ export async function POST() {
       customer: customerId,
     });
 
-    return NextResponse.json({ clientSecret: setupIntent.client_secret });
+    return respond({ clientSecret: setupIntent.client_secret });
   } catch (setupError) {
     console.error("Stripe setup intent error", setupError);
-    return NextResponse.json(
+    return respond(
       {
         error:
           setupError instanceof Error

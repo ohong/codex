@@ -1,30 +1,80 @@
 import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/auth-helpers-nextjs";
-import type { CookieOptions } from "@supabase/auth-helpers-nextjs";
+import type { NextResponse } from "next/server";
+
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-export function getSupabaseServerClient(): SupabaseClient {
+export function getSupabaseServerClient(
+  cookieResponse?: NextResponse
+): SupabaseClient {
   const cookieStore = cookies();
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabaseKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (!supabaseUrl || !supabaseAnonKey) {
+  if (!supabaseUrl || !supabaseKey) {
     throw new Error(
-      "Missing Supabase credentials. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY."
+      "Missing Supabase credentials. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY."
     );
   }
 
-  return createServerClient(supabaseUrl, supabaseAnonKey, {
+  if (
+    process.env.NODE_ENV !== "production" &&
+    !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY &&
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ) {
+    console.warn(
+      "Using deprecated NEXT_PUBLIC_SUPABASE_ANON_KEY. Update to NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY."
+    );
+  }
+
+  return createServerClient(supabaseUrl, supabaseKey, {
     cookies: {
       get(name: string) {
         return cookieStore.get(name)?.value;
       },
       set(name: string, value: string, options: CookieOptions) {
-        cookieStore.set({ name, value, ...options });
+        if (cookieResponse) {
+          cookieResponse.cookies.set({ name, value, ...options });
+          return;
+        }
+
+        try {
+          cookieStore.set({ name, value, ...options });
+        } catch (error) {
+          console.warn("Unable to set Supabase cookie on this request.", error);
+        }
       },
       remove(name: string, options: CookieOptions) {
-        cookieStore.delete({ name, ...options });
+        if (cookieResponse) {
+          cookieResponse.cookies.set({
+            name,
+            value: "",
+            ...options,
+            maxAge: 0,
+          });
+          return;
+        }
+
+        try {
+          cookieStore.delete({ name, ...options });
+        } catch (error) {
+          console.warn(
+            "Unable to remove Supabase cookie on this request.",
+            error
+          );
+        }
       },
     },
+  });
+}
+
+export function applySupabaseCookies(
+  source: NextResponse,
+  target: NextResponse
+) {
+  source.cookies.getAll().forEach((cookie) => {
+    target.cookies.set(cookie);
   });
 }

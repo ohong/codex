@@ -47,7 +47,7 @@ export default function RootLayout({
         <div className="relative isolate min-h-screen overflow-hidden">
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-0 bg-mesh opacity-60 blur-3xl"
+            className="pointer-events-none absolute inset-0 bg-mesh opacity-40 blur-3xl"
           />
           <div className="relative z-10 flex min-h-screen flex-col">
             {children}

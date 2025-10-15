@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { z } from "zod";
 
-import { getSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  applySupabaseCookies,
+  getSupabaseServerClient,
+} from "@/lib/supabase/server";
 
 const stripeSecret = process.env.STRIPE_SECRET_KEY;
 
@@ -24,20 +27,29 @@ export async function POST(request: Request) {
     );
   }
 
-  const supabase = getSupabaseServerClient();
+  const cookieResponse = new NextResponse();
+  const supabase = getSupabaseServerClient(cookieResponse);
+  const respond = (
+    body: unknown,
+    init?: ResponseInit | undefined
+  ): NextResponse => {
+    const response = NextResponse.json(body, init);
+    applySupabaseCookies(cookieResponse, response);
+    return response;
+  };
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return respond({ error: "Unauthorized" }, { status: 401 });
   }
 
   const body = await request.json().catch(() => ({}));
   const parsed = bodySchema.safeParse(body);
 
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid payment payload" }, { status: 400 });
+    return respond({ error: "Invalid payment payload" }, { status: 400 });
   }
 
   const { paymentMethodId } = parsed.data;
@@ -51,11 +63,11 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (profileError) {
-    return NextResponse.json({ error: profileError.message }, { status: 500 });
+    return respond({ error: profileError.message }, { status: 500 });
   }
 
   if (!profile?.stripe_customer_id) {
-    return NextResponse.json(
+    return respond(
       { error: "Missing Stripe customer. Save your address before linking a card." },
       { status: 400 }
     );
@@ -102,7 +114,7 @@ export async function POST(request: Request) {
       throw new Error(updateError.message);
     }
 
-    return NextResponse.json({
+    return respond({
       card: {
         brand: card.brand ?? "card",
         last4: card.last4 ?? "0000",
@@ -112,7 +124,7 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Failed to persist payment method", error);
-    return NextResponse.json(
+    return respond(
       {
         error:
           error instanceof Error
